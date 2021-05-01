@@ -1,14 +1,17 @@
 package com.XlynxX.boomer;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
-import com.XlynxX.boomer.AsyncTasks.sendPostRequest;
+import com.XlynxX.boomer.asynctask.MainAsyncTask;
 import com.XlynxX.boomer.databinding.ActivityMainBinding;
+import com.XlynxX.boomer.logging.Logger;
 
 public class MainActivity extends AppCompatActivity {
-
     private static ActivityMainBinding binding;
+    private AsyncTask task;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -23,13 +26,26 @@ public class MainActivity extends AppCompatActivity {
 
         binding.launchButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                if (binding.phoneNumberField.getText() != null) {
-                    Request request = new Request();
-                    request.setPhoneNumber(binding.phoneNumberField.getText().toString());
-                    request.setCallPermission(binding.enableCallsCheckBox.isChecked());
-                    new sendPostRequest().execute(request);
+                if (binding.phoneNumberField.getText() != null && task == null)
+                {
+                    Logger.Info("Starting main task...");
+                    new Runnable(){
+                        public void run() {
+                            task = new MainAsyncTask().execute(binding.phoneNumberField.getText().toString());
+                        }
+                    }.run();
+                    binding.launchButton.setText("Остановить");
+                    return;
                 }
+                Logger.Info("Main task has stopped");
+                binding.launchButton.setText("Запустить");
             }
         });
+
+        Logger.Info("App launched");
+    }
+
+    public static boolean isCallAllowed() {
+        return binding.enableCallsCheckBox.isChecked();
     }
 }
