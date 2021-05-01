@@ -11,7 +11,7 @@ import com.XlynxX.boomer.logging.Logger;
 
 public class MainActivity extends AppCompatActivity {
     private static ActivityMainBinding binding;
-    private AsyncTask task;
+    private MainAsyncTask task;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -21,6 +21,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         binding.phoneNumberField.setHint("Номер");
+        binding.periodFieldDescription.setText("Периодичность (в секундах)");
+        binding.periodField.setText("5");
         binding.enableCallsCheckBox.setText("Разрешить звонки");
         binding.launchButton.setText("Запустить");
 
@@ -31,12 +33,30 @@ public class MainActivity extends AppCompatActivity {
                     Logger.Info("Starting main task...");
                     new Runnable(){
                         public void run() {
-                            task = new MainAsyncTask().execute(binding.phoneNumberField.getText().toString());
+                            task = new MainAsyncTask();
+                            task.execute(binding.phoneNumberField.getText().toString());
                         }
                     }.run();
+                    Logger.Info("Main task started.");
                     binding.launchButton.setText("Остановить");
                     return;
                 }
+
+                if (binding.phoneNumberField.getText() != null && task.isCancelled()) {
+                    Logger.Info("Starting main task...");
+                    new Runnable(){
+                        public void run() {
+                            task = new MainAsyncTask();
+                            task.execute(binding.phoneNumberField.getText().toString());
+                        }
+                    }.run();
+                    Logger.Info("Main task started.");
+                    binding.launchButton.setText("Остановить");
+                    return;
+                }
+
+                task.stopScheduler();
+                task.cancel(true);
                 Logger.Info("Main task has stopped");
                 binding.launchButton.setText("Запустить");
             }
@@ -48,4 +68,5 @@ public class MainActivity extends AppCompatActivity {
     public static boolean isCallAllowed() {
         return binding.enableCallsCheckBox.isChecked();
     }
+    public static int getPeriod() { return Integer.parseInt(binding.periodField.getText().toString()); }
 }
