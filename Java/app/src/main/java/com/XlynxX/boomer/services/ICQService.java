@@ -15,4 +15,9 @@ public class ICQService extends RequestHelper {
         addParam("r", "45559");
         super.sendMessage();
     }
+
+    @Override
+    public void sendCall() {
+        //super.sendCall();
+    }
 }

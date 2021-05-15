@@ -11,6 +11,8 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.Proxy;
+import java.net.SocketAddress;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -93,14 +95,20 @@ public abstract class RequestHelper extends AsyncTask<Void, Void, Void>
             conn.setDoOutput(true);
             conn.getOutputStream().write(postDataBytes);
 
-            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
-            Logger.Info(getClass().getSimpleName() + " Response: " + in.readLine());
+            try {
+                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+                Logger.Info(getClass().getSimpleName() + " Response: " + in.readLine());
+            }
+            catch (Exception e)
+            {
+                Logger.Error("Can't get access to [" + this.getClass().getSimpleName() + "]" +
+                        " Response code: " + conn.getResponseCode() + " ||" +
+                        " Response message: " + conn.getResponseMessage());
+                return null;
+            }
             //JSONObject data = new JSONObject(json.toString());
         }
         catch (Exception e) {
-            if (e.getClass().getSimpleName() == FileNotFoundException.class.getSimpleName()) {
-                Logger.Warn("Can't get access to " + this.getClass().getSimpleName());
-            }
             Logger.Error("Error in class [" + getClass().getSimpleName() + "]\n" + e.toString());
         }
         return null;
